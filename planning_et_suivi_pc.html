@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plannings - Révisions STI2D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 2rem;
+        }
+
+        header a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        header a:hover {
+            opacity: 1;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #ddd;
+            overflow-x: auto;
+        }
+
+        .nav-tabs button {
+            padding: 1rem 1.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-tabs button.active {
+            color: #2a5298;
+            border-bottom-color: #2a5298;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-title {
+            color: #1e3c72;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        /* PLANNING CALENDAR */
+        .planning-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .planning-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .matiere-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .matiere-btn {
+            padding: 0.6rem 1rem;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .matiere-btn.active {
+            border-color: currentColor;
+            font-weight: 600;
+        }
+
+        .matiere-btn[data-matiere="maths"] {
+            color: #FF6B6B;
+        }
+
+        .matiere-btn[data-matiere="physique-chimie"] {
+            color: #4ECDC4;
+        }
+
+        .matiere-btn[data-matiere="pc-m"] {
+            color: #45B7D1;
+        }
+
+        .matiere-btn[data-matiere="i2d"] {
+            color: #FFA07A;
+        }
+
+        .matiere-btn[data-matiere="sin-ee"] {
+            color: #98D8C8;
+        }
+
+        .matiere-btn[data-matiere="grand-oral"] {
+            color: #F7DC6F;
+        }
+
+        .matiere-btn[data-matiere="philo"] {
+            color: #BB8FCE;
+        }
+
+        .matiere-btn[data-matiere="cours"] {
+            color: #999;
+        }
+
+        .matiere-btn[data-matiere="sport"] {
+            color: #555;
+        }
+
+        .matiere-btn[data-matiere="famille"] {
+            color: #E91E63;
+        }
+
+        .matiere-btn.active {
+            background: currentColor;
+            color: white;
+            border-color: currentColor;
+        }
+
+        .planning-navigation {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 0.6rem 1.2rem;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #1e3c72;
+        }
+
+        .date-range {
+            font-size: 0.95rem;
+            color: #666;
+            font-weight: 600;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+
+        .day-column {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 1rem 0.5rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .day-header {
+            font-weight: 600;
+            color: #1e3c72;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .day-date {
+            font-size: 0.8rem;
+            color: #999;
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .timeslots {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .timeslot {
+            padding: 0.4rem;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .timeslot:hover {
+            border-color: #2a5298;
+        }
+
+        .timeslot.filled {
+            color: white;
+            font-weight: 600;
+            border: none;
+        }
+
+        .timeslot[data-matiere="maths"].filled {
+            background: #FF6B6B;
+        }
+
+        .timeslot[data-matiere="physique-chimie"].filled {
+            background: #4ECDC4;
+        }
+
+        .timeslot[data-matiere="pc-m"].filled {
+            background: #45B7D1;
+        }
+
+        .timeslot[data-matiere="i2d"].filled {
+            background: #FFA07A;
+        }
+
+        .timeslot[data-matiere="sin-ee"].filled {
+            background: #98D8C8;
+        }
+
+        .timeslot[data-matiere="grand-oral"].filled {
+            background: #F7DC6F;
+            color: #333;
+        }
+
+        .timeslot[data-matiere="philo"].filled {
+            background: #BB8FCE;
+        }
+
+        .timeslot[data-matiere="cours"].filled {
+            background: #C0C0C0;
+            color: #333;
+        }
+
+        .timeslot[data-matiere="sport"].filled {
+            background: #555;
+        }
+
+        .timeslot[data-matiere="famille"].filled {
+            background: #E91E63;
+        }
+
+        /* GRILLE AVANCEMENT */
+        .progression-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .progression-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .progression-table th,
+        .progression-table td {
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .progression-table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #1e3c72;
+            position: sticky;
+            top: 0;
+        }
+
+        .progression-table td {
+            background: white;
+        }
+
+        .progression-table tr:nth-child(even) td {
+            background: #fafafa;
+        }
+
+        .chapter-name {
+            text-align: left;
+            font-weight: 500;
+            color: #1e3c72;
+        }
+
+        .checkbox-cell {
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: #2a5298;
+        }
+
+        .reset-btn {
+            margin-top: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: #999;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #666;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .calendar-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .planning-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .matiere-buttons {
+                flex-direction: column;
+            }
+
+            .matiere-btn {
+                width: 100%;
+            }
+
+            .progression-table th,
+            .progression-table td {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../../index.html">← Retour à l'accueil</a>
+        <h1>Plannings</h1>
+        <p>Gestion du temps et suivi des révisions</p>
+    </header>
+
+    <div class="container">
+        <!-- Navigation par onglets -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-tab="planning">Planning calendaire</button>
+            <button class="tab-btn" data-tab="progression">Avancement des révisions</button>
+        </div>
+
+        <!-- TAB 1: Planning Calendaire -->
+        <div class="tab-content active" id="planning">
+            <div class="planning-container">
+                <h2 class="section-title">Planning calendaire (4 mai - 14 juin)</h2>
+
+                <div class="planning-controls">
+                    <div>
+                        <label style="font-weight: 600; margin-right: 0.5rem;">Matière :</label>
+                    </div>
+                    <div class="matiere-buttons">
+                        <button class="matiere-btn active" data-matiere="maths">Maths</button>
+                        <button class="matiere-btn" data-matiere="physique-chimie">Phys-Chim</button>
+                        <button class="matiere-btn" data-matiere="pc-m">PC+M</button>
+                        <button class="matiere-btn" data-matiere="i2d">I2D</button>
+                        <button class="matiere-btn" data-matiere="sin-ee">SIN/EE</button>
+                        <button class="matiere-btn" data-matiere="grand-oral">Grand Oral</button>
+                        <button class="matiere-btn" data-matiere="philo">Philo</button>
+                        <button class="matiere-btn" data-matiere="cours">Cours</button>
+                        <button class="matiere-btn" data-matiere="sport">Sport</button>
+                        <button class="matiere-btn" data-matiere="famille">Famille</button>
+                    </div>
+                </div>
+
+                <div class="planning-navigation">
+                    <button class="nav-btn" onclick="previousWeek()">← Semaine précédente</button>
+                    <div class="date-range" id="dateRange"></div>
+                    <button class="nav-btn" onclick="nextWeek()">Semaine suivante →</button>
+                </div>
+
+                <div class="calendar-grid" id="calendarGrid"></div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #FF6B6B;"></div>
+                        <span>Maths</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4ECDC4;"></div>
+                        <span>Phys-Chim</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #45B7D1;"></div>
+                        <span>PC+M</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #FFA07A;"></div>
+                        <span>I2D</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #98D8C8;"></div>
+                        <span>SIN/EE</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #F7DC6F;"></div>
+                        <span>Grand Oral</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #BB8FCE;"></div>
+                        <span>Philo</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #C0C0C0;"></div>
+                        <span>Cours</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #555;"></div>
+                        <span>Sport</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #E91E63;"></div>
+                        <span>Famille</span>
+                    </div>
+                </div>
+
+                <button class="reset-btn" onclick="resetPlanning()">Réinitialiser le planning</button>
+            </div>
+        </div>
+
+        <!-- TAB 2: Avancement Révisions -->
+        <div class="tab-content" id="progression">
+            <div class="progression-container">
+                <h2 class="section-title">Avancement des révisions - Physique-Chimie STI2D</h2>
+                <p style="margin-bottom: 1.5rem; color: #666;">Coche chaque étape à mesure que tu progresses :</p>
+
+                <div style="overflow-x: auto;">
+                    <table class="progression-table">
+                        <thead>
+                            <tr>
+                                <th>Chapitre</th>
+                                <th>Relecture</th>
+                                <th>Fiches</th>
+                                <th>Exos base</th>
+                                <th>Flashcards</th>
+                                <th>Exo bac</th>
+                            </tr>
+                        </thead>
+                        <tbody id="progressionTable"></tbody>
+                    </table>
+                </div>
+
+                <button class="reset-btn" onclick="resetProgression()">Réinitialiser la progression</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constantes
+        const START_DATE = new Date(2026, 4, 4); // 4 mai 2026
+        const END_DATE = new Date(2026, 5, 14); // 14 juin 2026
+        const HOURS = 8; // 8h du matin
+        const END_HOUR = 23; // 23h du soir
+        const STEP = 30; // 30 minutes
+
+        const MATIERES = [
+            'maths', 'physique-chimie', 'pc-m', 'i2d', 'sin-ee', 'grand-oral', 'philo',
+            'cours', 'sport', 'famille'
+        ];
+
+        const CHAPITRES = [
+            'Energie et enjeux',
+            'Oxydoréduction, piles et accumulateurs',
+            'Energie électrique et puissance',
+            'Transport de l\'énergie électrique',
+            'Energie interne et transferts thermiques',
+            'Cinématique',
+            'Rotation',
+            'Energie lumineuse',
+            'Hydrostatique',
+            'Changements d\'état',
+            'Nucléaire',
+            'Acides et bases',
+            'Ondes sonores',
+            'Ondes électromagnétiques',
+	    '1ère : Quantités de matière',
+	    '1ère : Combustions'
+        ];
+
+        const ETAPES = ['Relecture', 'Fiches', 'Exos base', 'Flashcards', 'Exo bac'];
+
+        let currentMatiereSelected = 'maths';
+        let currentWeekStart = new Date(START_DATE);
+
+        // Initialisation
+        window.addEventListener('DOMContentLoaded', () => {
+            initTabs();
+            updatePlanning();
+            initProgression();
+        });
+
+        // ===== GESTION DES ONGLETS =====
+        function initTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+
+        // ===== GESTION SÉLECTION MATIÈRE =====
+        document.querySelectorAll('.matiere-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.matiere-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMatiereSelected = btn.dataset.matiere;
+            });
+        });
+
+        // ===== PLANNING CALENDAIRE =====
+        function generateTimeslots(hour, minute) {
+            const h = String(hour).padStart(2, '0');
+            const m = String(minute).padStart(2, '0');
+            return `${h}:${m}`;
+        }
+
+        function updatePlanning() {
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(weekEnd.getDate() + 14); // 15 jours
+
+            // Limiter à la date de fin
+            if (weekEnd > END_DATE) {
+                weekEnd.setTime(END_DATE.getTime());
+            }
+
+            // Afficher la plage de dates
+            const options = { day: 'numeric', month: 'short' };
+            const startStr = currentWeekStart.toLocaleDateString('fr-FR', options);
+            const endStr = weekEnd.toLocaleDateString('fr-FR', options);
+            document.getElementById('dateRange').textContent = `${startStr} au ${endStr}`;
+
+            // Générer la grille
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+
+            let currentDate = new Date(currentWeekStart);
+            while (currentDate <= weekEnd && currentDate <= END_DATE) {
+                const dayCol = document.createElement('div');
+                dayCol.className = 'day-column';
+
+                const dayName = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'][currentDate.getDay()];
+                const dayNum = currentDate.getDate();
+
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.textContent = `${dayName} ${dayNum}`;
+                dayCol.appendChild(dayHeader);
+
+                const dayDate = document.createElement('div');
+                dayDate.className = 'day-date';
+                const monthShort = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'][currentDate.getMonth()];
+                dayDate.textContent = monthShort;
+                dayCol.appendChild(dayDate);
+
+                const timeslotsDiv = document.createElement('div');
+                timeslotsDiv.className = 'timeslots';
+
+                // Créer les créneaux de 30 min
+                for (let hour = HOURS; hour < END_HOUR; hour++) {
+                    for (let minute = 0; minute < 60; minute += STEP) {
+                        const timeSlot = document.createElement('div');
+                        timeSlot.className = 'timeslot';
+                        timeSlot.textContent = generateTimeslots(hour, minute);
+
+                        const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}-${hour}-${minute}`;
+                        const storedData = localStorage.getItem(`planning_${dateKey}`);
+
+                        if (storedData) {
+                            timeSlot.dataset.matiere = storedData;
+                            timeSlot.classList.add('filled');
+                            timeSlot.textContent = storedData.substring(0, 4).toUpperCase();
+                        }
+
+                        timeSlot.addEventListener('click', () => {
+                            toggleTimeslot(timeSlot, dateKey);
+                        });
+
+                        timeslotsDiv.appendChild(timeSlot);
+                    }
+                }
+
+                dayCol.appendChild(timeslotsDiv);
+                calendarGrid.appendChild(dayCol);
+
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        }
+
+        function toggleTimeslot(element, dateKey) {
+            if (element.classList.contains('filled')) {
+                element.classList.remove('filled');
+                element.dataset.matiere = '';
+                element.textContent = generateTimeslots(
+                    parseInt(element.textContent.split(':')[0]),
+                    parseInt(element.textContent.split(':')[1])
+                );
+                localStorage.removeItem(`planning_${dateKey}`);
+            } else {
+                element.classList.add('filled');
+                element.dataset.matiere = currentMatiereSelected;
+                element.textContent = currentMatiereSelected.substring(0, 4).toUpperCase();
+                localStorage.setItem(`planning_${dateKey}`, currentMatiereSelected);
+            }
+        }
+
+        function previousWeek() {
+            currentWeekStart.setDate(currentWeekStart.getDate() - 15);
+            if (currentWeekStart < START_DATE) {
+                currentWeekStart.setTime(START_DATE.getTime());
+            }
+            updatePlanning();
+        }
+
+        function nextWeek() {
+            currentWeekStart.setDate(currentWeekStart.getDate() + 15);
+            const maxStart = new Date(END_DATE);
+            maxStart.setDate(maxStart.getDate() - 14);
+            if (currentWeekStart > maxStart) {
+                currentWeekStart.setTime(maxStart.getTime());
+            }
+            updatePlanning();
+        }
+
+        function resetPlanning() {
+            if (confirm('Es-tu sûr de vouloir réinitialiser tout le planning ?')) {
+                let currentDate = new Date(START_DATE);
+                while (currentDate <= END_DATE) {
+                    for (let hour = HOURS; hour < END_HOUR; hour++) {
+                        for (let minute = 0; minute < 60; minute += STEP) {
+                            const dateKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${currentDate.getDate()}-${hour}-${minute}`;
+                            localStorage.removeItem(`planning_${dateKey}`);
+                        }
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                updatePlanning();
+            }
+        }
+
+        // ===== GRILLE D'AVANCEMENT =====
+        function initProgression() {
+            const table = document.getElementById('progressionTable');
+            table.innerHTML = '';
+
+            CHAPITRES.forEach((chapitre, index) => {
+                const row = document.createElement('tr');
+
+                const chapterCell = document.createElement('td');
+                chapterCell.className = 'chapter-name';
+                chapterCell.textContent = `${index + 1}. ${chapitre}`;
+                row.appendChild(chapterCell);
+
+                ETAPES.forEach((etape) => {
+                    const cell = document.createElement('td');
+                    cell.className = 'checkbox-cell';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.dataset.chapitre = chapitre;
+                    checkbox.dataset.etape = etape;
+
+                    const key = `progression_${chapitre}_${etape}`;
+                    checkbox.checked = localStorage.getItem(key) === 'true';
+
+                    checkbox.addEventListener('change', () => {
+                        if (checkbox.checked) {
+                            localStorage.setItem(key, 'true');
+                        } else {
+                            localStorage.removeItem(key);
+                        }
+                    });
+
+                    cell.appendChild(checkbox);
+                    row.appendChild(cell);
+                });
+
+                table.appendChild(row);
+            });
+        }
+
+        function resetProgression() {
+            if (confirm('Es-tu sûr de vouloir réinitialiser toute la progression ?')) {
+                CHAPITRES.forEach((chapitre) => {
+                    ETAPES.forEach((etape) => {
+                        const key = `progression_${chapitre}_${etape}`;
+                        localStorage.removeItem(key);
+                    });
+                });
+                initProgression();
+            }
+        }
+    </script>
+</body>
+</html>
